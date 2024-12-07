@@ -1,0 +1,68 @@
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Weather App</h1>
+    <form id="weather-form">
+      <input type="text" id="city" placeholder="Enter city name" required />
+      <button type="submit">Get Weather</button>
+    </form>
+    <div id="weather-result"></div>
+    <h2>Search History</h2>
+    <ul id="history-list"></ul>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      // Get weather data
+      $('#weather-form').on('submit', function(event) {
+        event.preventDefault();
+        const city = $('#city').val();
+        
+        $.ajax({
+          url: '/weather',
+          method: 'POST',
+          data: JSON.stringify({ city }),
+          contentType: 'application/json',
+          success: function(data) {
+            $('#weather-result').html(`
+              <p><strong>Temperature:</strong> ${data.temperature}°C</p>
+              <p><strong>Weather:</strong> ${data.description}</p>
+            `);
+            loadHistory();
+          },
+          error: function() {
+            alert('Error fetching weather data');
+          }
+        });
+      });
+
+      // Load search history
+      function loadHistory() {
+        $.ajax({
+          url: '/history',
+          method: 'GET',
+          success: function(data) {
+            $('#history-list').empty();
+            data.forEach(item => {
+              $('#history-list').append(`
+                <li>${item.city}: ${item.temperature}°C, ${item.description}</li>
+              `);
+            });
+          }
+        });
+      }
+
+      loadHistory(); // Load history on page load
+    });
+  </script>
+</body>
+</html>
